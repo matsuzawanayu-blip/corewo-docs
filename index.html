@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code ユースケース紹介 — COREWO</title>
+<style>
+  :root {
+    --bg: #fff;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --accent: #1a1a1a;
+    --info-bg: #eff6ff;
+    --info-border: #bfdbfe;
+    --success-bg: #d4edda;
+    --success-border: #a3d9a5;
+    --warn-bg: #fffbeb;
+    --warn-border: #fde68a;
+    --purple-bg: #f3e8ff;
+    --purple-border: #c4b5fd;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Sticky Nav */
+  .sticky-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+  }
+
+  .nav-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav-inner::-webkit-scrollbar { display: none; }
+
+  .nav-pill {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .nav-pill:hover, .nav-pill.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* Header */
+  .hero {
+    padding: 64px 0 40px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .hero .subtitle {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .summary-box {
+    background: var(--info-bg);
+    border: 1px solid var(--info-border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    text-align: left;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    margin: 32px 0 48px;
+  }
+
+  .stat-card {
+    text-align: center;
+    padding: 20px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .stat-card .num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-card .label {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Sections */
+  section {
+    padding: 48px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .section-lead {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+    max-width: 680px;
+  }
+
+  .subsection-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 32px 0 12px;
+  }
+
+  /* Boxes */
+  .highlight-box {
+    background: var(--info-bg);
+    border: 1px solid var(--info-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-size: 0.93rem;
+  }
+
+  .success-box {
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-size: 0.93rem;
+  }
+
+  .warn-box {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-size: 0.93rem;
+  }
+
+  .purple-box {
+    background: var(--purple-bg);
+    border: 1px solid var(--purple-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-size: 0.93rem;
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+
+  .flow-step {
+    background: var(--info-bg);
+    border: 1px solid var(--info-border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 0.88rem;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .flow-step strong {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .flow-arrow {
+    font-size: 1.3rem;
+    color: var(--muted);
+    padding: 0 6px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.9rem;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  code {
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.88em;
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  }
+
+  pre {
+    background: #1a1a1a;
+    color: #e5e7eb;
+    padding: 20px 24px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 16px 0;
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  .tag-green { background: #d1fae5; color: #065f46; }
+  .tag-purple { background: #ede9fe; color: #5b21b6; }
+  .tag-orange { background: #ffedd5; color: #9a3412; }
+  .tag-red { background: #fee2e2; color: #991b1b; }
+
+  /* Source list */
+  .source-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .source-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .source-card .source-name {
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin-bottom: 4px;
+  }
+
+  .source-card .source-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  /* Knowledge cards */
+  .knowledge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .knowledge-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .knowledge-card h4 {
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+  }
+
+  .knowledge-card p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Footer */
+  .page-footer {
+    text-align: center;
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 1.5rem; }
+    .flow { flex-direction: column; align-items: stretch; }
+    .flow-arrow { transform: rotate(90deg); text-align: center; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media print {
+    .sticky-nav { position: static; }
+    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="sticky-nav">
+  <div class="nav-inner">
+    <a href="#concept" class="nav-pill active">コンセプト</a>
+    <a href="#usecase-mtg" class="nav-pill">決算前MTG</a>
+    <a href="#usecase-subsidy" class="nav-pill">補助金収集</a>
+    <a href="#commands" class="nav-pill">コマンド</a>
+    <a href="#mcp" class="nav-pill">MCP連携</a>
+    <a href="#hooks" class="nav-pill">Hook</a>
+    <a href="#knowledge" class="nav-pill">ナレッジ</a>
+    <a href="#results" class="nav-pill">成果</a>
+  </div>
+</nav>
+
+<!-- Header -->
+<header class="hero container">
+  <h1>Claude Code ユースケース紹介</h1>
+  <p class="subtitle">COREWOでの活用事例 — 「集めて、まとめる」を自動化する</p>
+
+  <div class="summary-box">
+    ファイナンス支援は情報が命。決算書、kintone、MF クラウド会計、補助金ポータル…
+    複数のシステムに散らばった情報を1つの資料にまとめる作業は、手作業では数時間かかります。<br><br>
+    COREWOでは、この<strong>「集めて→まとめる」をClaude Codeに任せ</strong>、
+    人間は<strong>「読んで→判断する→提案する」に集中</strong>しています。<br><br>
+    未経験メンバーが多いチームだからこそ、情報収集・資料作成の質をAIで底上げしつつ、
+    考える部分は人がやる。<strong>AIとの共存</strong>で、ファイナンス支援の現場を変えています。
+  </div>
+</header>
+
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="num">6+</div>
+      <div class="label">情報ソース自動収集</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">9</div>
+      <div class="label">カスタムスキル</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">5</div>
+      <div class="label">外部サービス連携</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">毎朝9時</div>
+      <div class="label">補助金情報の自動更新</div>
+    </div>
+  </div>
+</div>
+
+<!-- Concept -->
+<section id="concept" class="container">
+  <h2 class="section-title">コンセプト：人間がやらなくていいことをAIに任せる</h2>
+  <p class="section-lead">
+    ファイナンス支援の業務には、「情報を集める」と「判断する」の2つのフェーズがあります。
+    Claude Codeが担うのは前者。人間が担うのは後者です。
+  </p>
+
+  <div class="highlight-box">
+    <strong>従来のワークフロー</strong><br>
+    kintone で顧客情報を確認 → MFクラウド会計で決算データを取得 → 決算書PDFを1ページずつ読む →
+    Webで業界情報・補助金制度を調査 → Excelやドキュメントで資料を作成 → Notionに転記<br><br>
+    <strong>Claude Code導入後</strong><br>
+    <code>/mtg-prep フルバランス</code> とコマンドを1つ打つだけ。<br>
+    kintone、MF会計、PDF、Web調査をClaude Codeが並列で実行し、構造化されたブリーフィングをNotionに出力。
+    人間は完成したブリーフィングを読んで、提案内容を判断することに集中できる。
+  </div>
+
+  <div class="flow">
+    <div class="flow-step"><strong>収集</strong>kintone / MF会計<br>PDF / Web</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step"><strong>分析</strong>財務分析<br>市場調査</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step"><strong>構造化</strong>ブリーフィング<br>テンプレート出力</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step"><strong>蓄積</strong>Notion DB<br>Git履歴</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step" style="background: var(--success-bg); border-color: var(--success-border);">
+      <strong>人間</strong>読んで判断<br>提案する
+    </div>
+  </div>
+</section>
+
+<!-- Use Case 1: MTG Prep -->
+<section id="usecase-mtg" class="container">
+  <h2 class="section-title">ユースケース① 決算前MTGブリーフィング</h2>
+  <p class="section-lead">
+    顧客との決算前ミーティングに向けて、企業情報・財務データ・市場分析・制度情報をまとめた包括的なブリーフィングを自動生成します。
+  </p>
+
+  <h3 class="subsection-title">実行フロー</h3>
+
+  <div class="highlight-box">
+    <strong>Step 1. 顧客情報の取得</strong> <span class="tag tag-blue">kintone</span><br>
+    会社名でkintoneを検索し、顧客ID・担当者情報・連絡窓口を取得
+  </div>
+
+  <div class="highlight-box">
+    <strong>Step 2. 財務データの収集</strong> <span class="tag tag-green">MFクラウド会計</span> <span class="tag tag-purple">PDF</span><br>
+    MFクラウド会計からBS/PL/試算表を取得。決算書PDFをClaude Visionで読み取り、
+    別表一（本店住所・納税地）、別表二（株主情報・同族判定）、概況書（設立年月日）を構造化
+  </div>
+
+  <div class="highlight-box">
+    <strong>Step 3. 外部情報の調査</strong> <span class="tag tag-orange">Web調査</span><br>
+    会社HP・プレスリリース・採用情報から事業内容と強みを分析。
+    市場規模・PEST分析・5F分析を実施。関連する補助金・融資制度の最新情報を調査
+  </div>
+
+  <div class="highlight-box">
+    <strong>Step 4. ブリーフィング生成</strong> <span class="tag tag-blue">Notion</span><br>
+    テンプレートに沿って8セクション構成のブリーフィングを生成。
+    Notion顧客DBに子ページとして追加し、財務プロパティ（売上高・営業利益・資産合計等）を更新
+  </div>
+
+  <div class="highlight-box">
+    <strong>Step 5. 完了報告</strong> <span class="tag tag-purple">Slack</span><br>
+    作成先のNotionページURL、更新したプロパティの概要をSlack DMで報告
+  </div>
+
+  <h3 class="subsection-title">ブリーフィングの構成</h3>
+  <table>
+    <thead>
+      <tr><th>セクション</th><th>内容</th><th>情報ソース</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>エグゼクティブサマリー</td><td>財務状況・トレンド・最重要提案ポイントを3行で</td><td>全データ統合</td></tr>
+      <tr><td>企業情報</td><td>基本情報、担当者、事業内容、強み</td><td>kintone / Web</td></tr>
+      <tr><td>財務ハイライト</td><td>売上・利益・資産の推移テーブル</td><td>MF会計 / PDF</td></tr>
+      <tr><td>詳細分析</td><td>収益性・安全性・成長性・効率性</td><td>MF会計 / PDF</td></tr>
+      <tr><td>投資動向</td><td>設備投資額の推移、投資フェーズ判定</td><td>PDF / BS分析</td></tr>
+      <tr><td>ビジネスコンテキスト</td><td>市場分析・PEST・5F・課題・投資仮説</td><td>Web調査</td></tr>
+      <tr><td>提案ポイント</td><td>制度情報、融資支援、補助金支援</td><td>Web / 補助金DB</td></tr>
+      <tr><td>MTGアジェンダ案</td><td>確認事項、具体提案、切り出し方メモ</td><td>全データ統合</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn-box">
+    <strong>注意:</strong> 全ステップ間でユーザー確認を必須化しています。
+    AIが勝手に次のステップに進まないよう、スキル定義で確認ルールを設定済みです。
+  </div>
+</section>
+
+<!-- Use Case 2: Subsidy Collection -->
+<section id="usecase-subsidy" class="container">
+  <h2 class="section-title">ユースケース② 補助金情報の自動収集</h2>
+  <p class="section-lead">
+    毎朝9時に6つの情報ソースから補助金・助成金の最新情報を並列収集し、
+    Notionデータベースに蓄積。変更があればSlackに自動通知します。
+  </p>
+
+  <h3 class="subsection-title">収集ソース（6種）</h3>
+  <div class="source-grid">
+    <div class="source-card">
+      <div class="source-name">jGrants</div>
+      <div class="source-desc">デジタル庁の補助金API。受付中の補助金を一括取得し詳細情報を収集</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">持続化補助金</div>
+      <div class="source-desc">小規模事業者持続化補助金の公募状況・締切・採択発表を追跡</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">ものづくり補助金</div>
+      <div class="source-desc">回次ごとのスケジュール（23次まで）と採択結果を追跡</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">新事業進出補助金</div>
+      <div class="source-desc">公募スケジュールと申請期限を自動取得</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">省力化投資補助金</div>
+      <div class="source-desc">カタログ注文型・一般型の公募状況を監視</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">東京都中小企業振興公社</div>
+      <div class="source-desc">躍進的事業推進、DX活用、環境、新製品開発、創業助成の5事業を追跡</div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">処理フロー</h3>
+  <div class="flow">
+    <div class="flow-step"><strong>収集</strong>6ソース並列<br>API + スクレイピング</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step"><strong>マージ</strong>ポータル日付<br>+ jGrants詳細</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step"><strong>差分検知</strong>新規 / 更新<br>ステータス変更 / 締切接近</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step"><strong>Notion</strong>upsert<br>（新規作成 or 更新）</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step"><strong>Slack</strong>変更通知<br>締切アラート</div>
+  </div>
+
+  <h3 class="subsection-title">差分検知のしくみ</h3>
+  <table>
+    <thead>
+      <tr><th>検知タイプ</th><th>条件</th><th>アクション</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="tag tag-green">新規</span></td><td>Notion DBに存在しないソースID</td><td>新規ページ作成 + Slack通知</td></tr>
+      <tr><td><span class="tag tag-blue">更新</span></td><td>コンテンツハッシュの変化</td><td>既存ページ更新</td></tr>
+      <tr><td><span class="tag tag-orange">ステータス変更</span></td><td>公募予定→公募中、採択発表 等</td><td>Slack通知</td></tr>
+      <tr><td><span class="tag tag-red">締切接近</span></td><td>公募終了まで7日/3日/当日</td><td>Slackアラート</td></tr>
+    </tbody>
+  </table>
+
+  <div class="success-box">
+    <strong>スマートなステータス判定:</strong>
+    公募終了日まで10日以内なら「公募終了間近」、公募開始日まで10日以内なら「公募開始間近」に自動でステータスを細分化。
+    Notionのボードビューでひと目で優先度がわかります。
+  </div>
+
+  <h3 class="subsection-title">Notion データベース構成</h3>
+  <table>
+    <thead>
+      <tr><th>プロパティ</th><th>型</th><th>用途</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>補助金名</td><td>title</td><td>正式名称（回次含む）</td></tr>
+      <tr><td>ステータス</td><td>select</td><td>公募予定/開始間近/公募中/終了間近/終了/採択審査中/採択発表</td></tr>
+      <tr><td>種類</td><td>select</td><td>持続化/ものづくり/新事業進出/省力化/東京都 等</td></tr>
+      <tr><td>補助率・上限額</td><td>text</td><td>補助率と最大補助額</td></tr>
+      <tr><td>公募開始日・終了日</td><td>date</td><td>タイムラインビューで可視化</td></tr>
+      <tr><td>情報ソース</td><td>select</td><td>どこから取得したか</td></tr>
+      <tr><td>コンテンツハッシュ</td><td>text</td><td>差分検知に使用（変更判定）</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:16px; font-size:0.9rem; color:var(--muted);">
+    3つのビュー（テーブル/ボード/タイムライン）で、一覧・ステータス管理・スケジュール俯瞰が可能。
+  </p>
+</section>
+
+<!-- Commands -->
+<section id="commands" class="container">
+  <h2 class="section-title">スラッシュコマンド = 業務メニュー</h2>
+  <p class="section-lead">
+    繰り返し行う業務はスラッシュコマンド（スキル）として定義。コマンド1つで複雑な業務フローを実行できます。
+  </p>
+
+  <h3 class="subsection-title">業務系</h3>
+  <table>
+    <thead>
+      <tr><th>コマンド</th><th>やること</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>/mtg-prep</code></td><td>決算前MTGブリーフィング作成（kintone→MF会計→Web調査→Notion出力）</td></tr>
+      <tr><td><code>/mtg-prep2</code></td><td>決算前MTGブリーフィング作成（別バリエーション）</td></tr>
+      <tr><td><code>/log</code></td><td>セッション中の作業内容を日次ログに追記</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection-title">ナレッジ管理系</h3>
+  <table>
+    <thead>
+      <tr><th>コマンド</th><th>やること</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>/dream</code></td><td>メモリファイルの整理・統合（重複排除・構造化）</td></tr>
+      <tr><td><code>/distill</code></td><td>上司の発言メモ（Fleeting Notes）をPermanent Noteに昇華</td></tr>
+      <tr><td><code>/review-knowledge</code></td><td>ナレッジファイルの品質レビュー（情報の鮮度・正確性チェック）</td></tr>
+      <tr><td><code>/neuroscience</code></td><td>脳科学リサーチ — 最新研究を自動調査しナレッジに追記</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection-title">ツール系</h3>
+  <table>
+    <thead>
+      <tr><th>コマンド</th><th>やること</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>/humanizer</code></td><td>AI臭い文章を自然な文体に修正</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- MCP -->
+<section id="mcp" class="container">
+  <h2 class="section-title">MCP連携 = Claude Codeの手足</h2>
+  <p class="section-lead">
+    MCP（Model Context Protocol）により、Claude Codeから外部サービスのAPIを直接呼び出せます。
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>サービス</th><th>できること</th><th>活用例</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>kintone</strong></td>
+        <td>レコード検索・取得、フォーム管理、アプリ操作</td>
+        <td>顧客情報・担当者の取得、顧客IDの特定</td>
+      </tr>
+      <tr>
+        <td><strong>Notion</strong></td>
+        <td>ページ作成・更新、DB検索、コメント</td>
+        <td>ブリーフィング出力、補助金DB更新、顧客マスター管理</td>
+      </tr>
+      <tr>
+        <td><strong>Slack</strong></td>
+        <td>メッセージ送受信、チャンネル操作、スレッド返信</td>
+        <td>完了報告、補助金変更通知、チーム連絡</td>
+      </tr>
+      <tr>
+        <td><strong>MFクラウド会計</strong></td>
+        <td>仕訳登録、試算表取得、BS/PL取得、取引先管理</td>
+        <td>決算データの自動取得、財務分析用データ収集</td>
+      </tr>
+      <tr>
+        <td><strong>Google Drive</strong></td>
+        <td>ファイル検索・取得</td>
+        <td>決算書PDF等の参照</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="highlight-box">
+    <strong>データの流れ:</strong>
+    自然言語で指示 → Claude Code がMCP経由でAPI実行 → 結果を構造化して出力（Notion / Slack / ローカルファイル）
+  </div>
+</section>
+
+<!-- Hooks -->
+<section id="hooks" class="container">
+  <h2 class="section-title">Hook = 安全装置とガードレール</h2>
+  <p class="section-lead">
+    AIが自律的に動く中でも、事故を防ぐためのHookを設定しています。
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>タイミング</th><th>Hook</th><th>やること</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>PreToolUse</td>
+        <td><code>.env</code> ステージング防止</td>
+        <td><code>git add .env</code> や <code>git add .</code> を検知して自動ブロック。シークレットの漏洩を防止</td>
+      </tr>
+      <tr>
+        <td>PreToolUse</td>
+        <td>GDrive トークンリフレッシュ</td>
+        <td>Google Drive系ツール呼び出し前にOAuthトークンを自動更新。認証切れによるエラーを防止</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection-title">パーミッション設定</h3>
+  <div class="warn-box">
+    <strong>書き込み禁止ファイル（deny）:</strong><br>
+    <code>.env</code> / <code>.env.*</code> / <code>credentials.*</code> / <code>secrets.*</code> / <code>.git/**</code><br><br>
+    これらのファイルへのEdit/Writeは、Claude Codeがどのような指示を受けても実行できません。
+  </div>
+</section>
+
+<!-- Knowledge -->
+<section id="knowledge" class="container">
+  <h2 class="section-title">ナレッジ蓄積 = チームの知的資産をストックする</h2>
+  <p class="section-lead">
+    日々の業務で得た知見、上司のノウハウ、調査結果をナレッジファイルとして蓄積し、
+    次の業務に活かせる形で管理しています。
+  </p>
+
+  <h3 class="subsection-title">3つのナレッジサイクル</h3>
+
+  <div class="purple-box">
+    <strong>/distill — 上司の知見を資産化する</strong><br>
+    上司（藤田さん）との会話や指摘をFleeting Notes（走り書き）として記録。
+    <code>/distill</code> コマンドでPermanent Note（恒久的なナレッジ）に昇華。
+    属人的なノウハウを、チームで参照できる形に変換します。
+  </div>
+
+  <div class="purple-box">
+    <strong>/dream — メモリの整理・統合</strong><br>
+    Claude Codeのメモリファイル（セッション間で持続する記憶）を定期的に整理。
+    重複の排除、古い情報の更新、関連情報の統合を自動で実行します。
+  </div>
+
+  <div class="purple-box">
+    <strong>/review-knowledge — 品質チェック</strong><br>
+    蓄積したナレッジファイルの鮮度・正確性をレビュー。
+    古くなった情報のフラグ付け、出典切れの検出を行います。
+  </div>
+
+  <h3 class="subsection-title">蓄積済みナレッジ</h3>
+  <div class="knowledge-grid">
+    <div class="knowledge-card">
+      <h4>脱炭素関連</h4>
+      <p>タンソーマン資料、環境省セミナーの知見。顧客提案時の環境・ESG関連の情報源として活用</p>
+    </div>
+    <div class="knowledge-card">
+      <h4>LLMセキュリティ</h4>
+      <p>プロンプトインジェクション防御、3層モデル。AI活用時のリスク管理ナレッジ</p>
+    </div>
+    <div class="knowledge-card">
+      <h4>AI×人間の認知</h4>
+      <p>DMN/TPN理論、AIがTPN（タスク集中ネットワーク）を奪う問題、自己参照ループの危険性</p>
+    </div>
+    <div class="knowledge-card">
+      <h4>Claude Code ベストプラクティス</h4>
+      <p>ハッカソンチャンピオンのリポジトリから抽出した運用ノウハウ</p>
+    </div>
+  </div>
+</section>
+
+<!-- Results -->
+<section id="results" class="container">
+  <h2 class="section-title">成果</h2>
+  <p class="section-lead">
+    Claude Code導入によって生まれた具体的な効果です。
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>指標</th><th>内容</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>ブリーフィング作成</strong></td>
+        <td>複数システムからの情報収集→8セクション構成の資料を、コマンド1つで生成。人手なら数時間かかる作業</td>
+      </tr>
+      <tr>
+        <td><strong>補助金情報の鮮度</strong></td>
+        <td>6ソースから毎朝自動収集。ステータス変更・締切接近をSlackで即時通知。見逃しゼロへ</td>
+      </tr>
+      <tr>
+        <td><strong>ナレッジの属人化防止</strong></td>
+        <td>上司のノウハウを <code>/distill</code> で構造化し、チームの共有資産として蓄積</td>
+      </tr>
+      <tr>
+        <td><strong>セキュリティ</strong></td>
+        <td>Hook + deny設定で、シークレット漏洩・誤操作を仕組みで防止</td>
+      </tr>
+      <tr>
+        <td><strong>未経験メンバーの底上げ</strong></td>
+        <td>AIが情報収集・分析の質を担保。人間は「判断」と「提案」に集中できる環境を実現</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="success-box">
+    <strong>AIとの共存:</strong>
+    Claude Codeは「何でも自動化する」ためのツールではなく、
+    「人間がやらなくていいことを引き受ける」パートナーです。
+    集めて、まとめて、構造化する。その先の判断と提案は、人間の仕事です。
+  </div>
+</section>
+
+</div>
+
+<footer class="page-footer container">
+  生成日: 2026-03-30 | 提供: COREWO
+</footer>
+
+<script>
+// Intersection Observer for active nav
+const sections = document.querySelectorAll('section[id]');
+const navPills = document.querySelectorAll('.nav-pill');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navPills.forEach(pill => pill.classList.remove('active'));
+      const id = entry.target.getAttribute('id');
+      const activePill = document.querySelector(`.nav-pill[href="#${id}"]`);
+      if (activePill) activePill.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(section => observer.observe(section));
+
+// Smooth scroll
+navPills.forEach(pill => {
+  pill.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(pill.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+
+</body>
+</html>
